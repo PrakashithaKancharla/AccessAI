@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AccessAI — Accessible City Assistant</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Leaflet CSS for real interactive OpenStreetMap rendering -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <!-- Lucide icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+
+  <!-- ============================================================
+       HEADER
+       ============================================================ -->
+  <header class="site-header" role="banner">
+    <div class="container header-inner">
+      <a href="#home" class="brand" aria-label="AccessAI — go to top">
+        <span class="brand-icon" aria-hidden="true"><i data-lucide="accessibility"></i></span>
+        <span class="brand-name">AccessAI</span>
+        <span class="brand-badge">Accessibility-first navigation</span>
+      </a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <ul role="list">
+          <li><a href="#home">Home</a></li>
+          <li><a href="#needs">Find Route</a></li>
+          <li><a href="#profile">Profile</a></li>
+          <li><a href="#routes">Route Comparison</a></li>
+          <li><a href="#ai-explanation">AI Explanation</a></li>
+        </ul>
+      </nav>
+      <div class="header-controls">
+        <button class="btn btn-voice-toggle" id="global-voice-toggle"
+          aria-label="Toggle Voice Assistant Mode"
+          aria-pressed="false">
+          <i data-lucide="mic-off" id="global-voice-icon"></i>
+          <span id="global-voice-text">Voice: OFF</span>
+        </button>
+        <button class="btn-icon" id="settings-trigger"
+          aria-label="Open accessibility settings"
+          aria-controls="accessibility-settings"
+          aria-expanded="false">
+          <i data-lucide="settings-2"></i>
+        </button>
+        <button class="btn-icon nav-toggle" id="nav-toggle"
+          aria-label="Open navigation menu"
+          aria-expanded="false"
+          aria-controls="mobile-nav">
+          <i data-lucide="menu"></i>
+        </button>
+      </div>
+    </div>
+    <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" hidden>
+      <ul role="list">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#needs">Find Route</a></li>
+        <li><a href="#profile">Profile</a></li>
+        <li><a href="#routes">Route Comparison</a></li>
+        <li><a href="#ai-explanation">AI Explanation</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- VOICE ASSISTANT INTERACTION BAR / CONVERSATIONAL PANEL -->
+  <aside id="voice-assistant-bar" class="voice-assistant-bar" hidden aria-live="polite" role="region" aria-label="Voice Assistant Interaction">
+    <div class="container voice-bar-inner">
+      <div class="voice-status-indicator">
+        <div class="voice-pulse-ring" id="voice-pulse-ring"></div>
+        <span class="voice-state-badge" id="voice-state-badge">🎙 Tap to Speak</span>
+      </div>
+      <div class="voice-transcript-wrap">
+        <p class="voice-transcript-text" id="voice-transcript-text">&ldquo;Welcome to AccessAI. Tap the mic or say where you want to go.&rdquo;</p>
+      </div>
+      <div class="voice-bar-actions">
+        <button type="button" class="btn btn-sm btn-voice-action" id="voice-mic-btn" aria-label="Start or Stop Listening">
+          <i data-lucide="mic" id="voice-mic-action-icon"></i> <span id="voice-mic-action-text">Listen</span>
+        </button>
+        <button type="button" class="btn btn-sm btn-ghost" id="voice-mute-btn" aria-label="Mute / Stop Speaking">
+          <i data-lucide="volume-x"></i> Stop Speech
+        </button>
+        <button type="button" class="btn btn-sm btn-ghost" id="voice-close-bar-btn" aria-label="Turn Voice Off">
+          <i data-lucide="x"></i> Voice OFF
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- BROWSER AUTOPLAY PROMPT TOAST -->
+  <div id="voice-autoplay-prompt" class="voice-autoplay-prompt" hidden role="alert">
+    <div class="container voice-prompt-inner">
+      <div class="voice-prompt-left">
+        <i data-lucide="volume-2" aria-hidden="true"></i>
+        <span>Enable voice assistant for conversational guidance and audio navigation?</span>
+      </div>
+      <div class="voice-prompt-actions">
+        <button type="button" class="btn btn-primary btn-sm" id="enable-voice-prompt-btn">
+          <i data-lucide="mic"></i> Enable Voice
+        </button>
+        <button type="button" class="btn btn-ghost btn-sm" id="dismiss-voice-prompt-btn">
+          Dismiss
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <main id="main-content">
+
+    <!-- ==========================================================
+         1. HERO
+         ========================================================== -->
+    <section id="home" class="section hero-section" aria-labelledby="hero-heading">
+      <div class="container hero-inner">
+        <div class="hero-text">
+          <div class="proto-badge" role="note">
+            <i data-lucide="map" aria-hidden="true"></i>
+            Real OpenStreetMap routing &bull; Accessibility evaluation
+          </div>
+          <h1 id="hero-heading">
+            The shortest route isn&rsquo;t always
+            <span class="text-accent">the accessible route.</span>
+          </h1>
+          <p class="hero-sub">
+            AccessAI helps you plan journeys around your individual accessibility
+            requirements &mdash; not just distance or travel time.
+          </p>
+          <div class="hero-cta">
+            <a href="#needs" class="btn btn-primary btn-lg">
+              <i data-lucide="map-pin" aria-hidden="true"></i>
+              Find an Accessible Route
+            </a>
+            <button class="btn btn-ghost btn-lg" id="hero-voice-btn"
+              title="Toggle AccessAI Voice Assistant">
+              <i data-lucide="mic" aria-hidden="true"></i>
+              Try Voice Assistance
+            </button>
+          </div>
+          <p class="hero-note">
+            <i data-lucide="info" aria-hidden="true"></i>
+            Prototype with live OpenStreetMap geocoding &amp; foot routing.
+          </p>
+        </div>
+        <!-- Decorative route preview card -->
+        <div class="hero-card" aria-hidden="true">
+          <div class="hero-card-top">
+            <span class="dot dot-green"></span>
+            <span class="dot dot-amber"></span>
+            <span class="hero-card-label">Live Map &amp; Routing</span>
+          </div>
+          <div class="hero-route">
+            <span class="rtag rtag-a">A</span>
+            <span class="hero-route-info">Direct foot path</span>
+            <span class="hero-score score-low">55/100</span>
+          </div>
+          <div class="hero-route hero-route-rec">
+            <span class="rtag rtag-b">B</span>
+            <span class="hero-route-info">Accessible foot path</span>
+            <span class="hero-score score-high">92/100</span>
+            <span class="rec-chip">
+              <i data-lucide="star" aria-hidden="true"></i> Recommended
+            </span>
+          </div>
+          <p class="hero-card-foot">Scored deterministically against your profile</p>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ==========================================================
+         2. TELL ACCESSAI YOUR NEEDS
+         ========================================================== -->
+    <section id="needs" class="section needs-section" aria-labelledby="needs-heading">
+      <div class="container">
+
+        <div class="section-hd">
+          <h2 id="needs-heading">Tell AccessAI what you need</h2>
+          <p class="section-sub">Describe your requirements naturally or choose your situation.</p>
+        </div>
+
+        <!-- METHOD A: Natural-language input — primary interaction -->
+        <div class="nl-input-wrap">
+
+          <!-- Example prompt chips -->
+          <div class="example-prompts">
+            <span class="example-label" aria-hidden="true">Try an example:</span>
+            <div class="example-chips" role="list" aria-label="Example accessibility descriptions">
+              <button class="example-chip" type="button" role="listitem"
+                data-prompt="I use a wheelchair and need ramps. I cannot use stairs."
+                aria-label="Use example: wheelchair user who needs ramps">
+                <i data-lucide="accessibility" aria-hidden="true"></i>
+                Wheelchair &amp; ramps
+              </button>
+              <button class="example-chip" type="button" role="listitem"
+                data-prompt="I have difficulty walking uphill. I prefer a flatter route even if it is longer."
+                aria-label="Use example: difficulty walking uphill">
+                <i data-lucide="triangle-alert" aria-hidden="true"></i>
+                Uphill difficulty
+              </button>
+              <button class="example-chip" type="button" role="listitem"
+                data-prompt="I am visually impaired and need voice guidance."
+                aria-label="Use example: visually impaired, needs voice guidance">
+                <i data-lucide="eye-off" aria-hidden="true"></i>
+                Visual impairment
+              </button>
+            </div>
+          </div>
+
+          <label for="nl-input" class="nl-label">
+            <i data-lucide="message-square-text" aria-hidden="true"></i>
+            Describe your accessibility needs in your own words
+          </label>
+          <div class="nl-box">
+            <textarea
+              id="nl-input"
+              class="nl-textarea"
+              rows="3"
+              placeholder="I use a wheelchair, cannot use stairs, need ramps, and can walk a little farther."
+              aria-describedby="nl-hint nl-status"
+            ></textarea>
+            <div class="nl-actions">
+              <button class="btn btn-ghost btn-sm" type="button" id="speak-btn"
+                aria-label="Voice input — opens notice about future voice support"
+                aria-controls="speak-message">
+                <i data-lucide="mic" aria-hidden="true"></i>
+                Speak
+              </button>
+              <button class="btn btn-primary" type="button" id="continue-btn">
+                Continue
+                <i data-lucide="arrow-right" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Speak message -->
+          <div id="speak-message" class="speak-notice" role="status" aria-live="polite" hidden>
+            <i data-lucide="info" aria-hidden="true"></i>
+            Voice input will be enabled in the voice integration step. Please type your requirements or select options below.
+          </div>
+
+          <!-- Status / validation message area -->
+          <div id="nl-status" aria-live="polite" aria-atomic="true"></div>
+
+          <p id="nl-hint" class="field-hint">
+            AccessAI converts your description into a structured accessibility profile directly inside the app.
+          </p>
+        </div>
+
+        <div class="or-divider" aria-hidden="true">
+          <span>OR</span>
+        </div>
+
+        <!-- METHOD B: Category & Questionnaire — Alternative Input -->
+        <div class="category-method-wrap">
+          <div class="category-header">
+            <h3><i data-lucide="users" aria-hidden="true"></i> Or choose what best describes your situation</h3>
+            <p class="category-sub">Select your situation to answer a few quick questions and generate your profile.</p>
+          </div>
+
+          <div class="category-grid" role="group" aria-label="Accessibility situation categories">
+            <button class="category-card" type="button" data-cat="wheelchair">
+              <i data-lucide="accessibility" aria-hidden="true"></i>
+              <span class="cat-title">Wheelchair user</span>
+              <span class="cat-desc">Step-free, ramps, accessible entrances</span>
+            </button>
+            <button class="category-card" type="button" data-cat="crutch">
+              <i data-lucide="footprints" aria-hidden="true"></i>
+              <span class="cat-title">Crutch / walking support</span>
+              <span class="cat-desc">Avoid stairs &amp; long distances</span>
+            </button>
+            <button class="category-card" type="button" data-cat="senior">
+              <i data-lucide="heart-handshake" aria-hidden="true"></i>
+              <span class="cat-title">Senior citizen</span>
+              <span class="cat-desc">Gentle slopes &amp; rest points</span>
+            </button>
+            <button class="category-card" type="button" data-cat="blind">
+              <i data-lucide="eye-off" aria-hidden="true"></i>
+              <span class="cat-title">Blind / visually impaired</span>
+              <span class="cat-desc">Audio guidance &amp; clear pathways</span>
+            </button>
+            <button class="category-card" type="button" data-cat="parent">
+              <i data-lucide="baby" aria-hidden="true"></i>
+              <span class="cat-title">Parent with wheelchair child</span>
+              <span class="cat-desc">Ramps, wide doors &amp; step-free</span>
+            </button>
+            <button class="category-card" type="button" data-cat="mobility">
+              <i data-lucide="person-standing" aria-hidden="true"></i>
+              <span class="cat-title">Mobility difficulty</span>
+              <span class="cat-desc">Flatter terrain &amp; shorter walking</span>
+            </button>
+          </div>
+
+          <!-- Dynamic Questions Box -->
+          <div id="category-questions" class="category-questions-card" hidden aria-live="polite">
+            <div class="q-header">
+              <h4 id="q-category-title">Accessibility Questions</h4>
+              <p>Answer the accessibility questions below for your situation:</p>
+            </div>
+
+            <div id="questions-list" class="questions-list" role="group" aria-label="Category accessibility questions">
+              <!-- Dynamically rendered based on selected category -->
+            </div>
+
+            <div class="q-actions">
+              <button class="btn btn-primary btn-lg" type="button" id="category-continue-btn">
+                Continue
+                <i data-lucide="arrow-right" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ==========================================================
+         3. ACCESSIBILITY PROFILE
+         ========================================================== -->
+    <section id="profile" class="section profile-section" aria-labelledby="profile-heading">
+      <div class="container">
+
+        <div class="section-hd">
+          <h2 id="profile-heading">Your AccessAI Profile</h2>
+          <p class="section-sub">Review and edit your requirements directly. Click &ldquo;Confirm Requirements&rdquo; when ready.</p>
+        </div>
+
+        <!-- #profile-card is populated by renderProfileCard() in script.js -->
+        <div id="profile-card" class="profile-card profile-card-pending" aria-label="Accessibility profile">
+          <div class="profile-pending">
+            <i data-lucide="clipboard-list" aria-hidden="true"></i>
+            <p>
+              Describe your accessibility needs or choose a category above, then click
+              <strong>Continue</strong> to see your profile here.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ==========================================================
+         4. ROUTE INPUT
+         ========================================================== -->
+    <section id="route-input" class="section route-input-section" aria-labelledby="route-input-heading">
+      <div class="container">
+
+        <div class="section-hd">
+          <h2 id="route-input-heading">Where do you want to go?</h2>
+          <p class="section-sub">Enter your start and destination for real geocoding and routing.</p>
+        </div>
+
+        <div id="profile-saved-banner" class="profile-saved-banner" role="note" hidden>
+          <i data-lucide="check-circle" aria-hidden="true"></i>
+          <span>Your accessibility profile is ready. Enter locations below to find accessible routes.</span>
+        </div>
+
+        <form class="route-form" novalidate aria-label="Route planning form">
+          <div class="form-row">
+            <div class="form-field">
+              <div class="field-label-row">
+                <label for="from-location" class="field-label">
+                  <i data-lucide="circle-dot" aria-hidden="true"></i>
+                  From
+                </label>
+                <button type="button" class="btn-text-action" id="use-current-loc-btn" title="Use current GPS location">
+                  <i data-lucide="crosshair" aria-hidden="true"></i>
+                  <span>Use my current location</span>
+                </button>
+              </div>
+              <input type="text" id="from-location" class="text-input"
+                placeholder="e.g. King's Cross Station, London" autocomplete="off"
+                aria-describedby="from-hint" />
+              <span id="from-hint" class="field-hint">Starting address, station, or landmark</span>
+            </div>
+            <div class="form-field">
+              <label for="to-location" class="field-label">
+                <i data-lucide="map-pin" aria-hidden="true"></i>
+                To
+              </label>
+              <input type="text" id="to-location" class="text-input"
+                placeholder="e.g. British Museum, London" autocomplete="off"
+                aria-describedby="to-hint" />
+              <span id="to-hint" class="field-hint">Destination address, clinic, or landmark</span>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg" id="find-routes-btn">
+              <i data-lucide="search" aria-hidden="true"></i>
+              Find Accessible Routes
+            </button>
+          </div>
+          <p class="form-note">
+            <i data-lucide="map" aria-hidden="true"></i>
+            Live OpenStreetMap geocoding and pedestrian routing with accessibility scoring.
+          </p>
+        </form>
+
+      </div>
+    </section>
+
+
+    <!-- ==========================================================
+         5. ROUTE COMPARISON & REAL MAP
+         ========================================================== -->
+    <section id="routes" class="section routes-section" aria-labelledby="routes-heading">
+      <div class="container">
+
+        <div class="section-hd">
+          <h2 id="routes-heading">Route comparison &amp; Interactive Map</h2>
+          <p class="section-sub">Routes discovered via OpenStreetMap and evaluated against your profile.</p>
+        </div>
+
+        <!-- #route-results is populated by renderRouteResults() in script.js -->
+        <div id="route-results" aria-live="polite" aria-atomic="false">
+          <div class="routes-placeholder">
+            <i data-lucide="search" aria-hidden="true"></i>
+            <p>Enter your start and destination above, then click <strong>Find Accessible Routes</strong>.</p>
+          </div>
+        </div>
+
+        <!-- REAL LEAFLET MAP CONTAINER -->
+        <div id="route-map" class="route-map-container" hidden role="region" aria-label="Interactive Route Map">
+          
+          <!-- LIVE NAVIGATION HUD (VISIBLE WHEN NAVIGATION IS ACTIVE) -->
+          <div id="nav-hud" class="nav-hud" hidden aria-live="assertive" role="region" aria-label="Live Navigation Guidance">
+            <div class="nav-hud-top">
+              <div class="nav-maneuver-icon-wrap">
+                <i data-lucide="arrow-up-right" id="nav-maneuver-icon" aria-hidden="true"></i>
+              </div>
+              <div class="nav-instruction-wrap">
+                <div class="nav-instruction-main" id="nav-instruction-text">Starting navigation...</div>
+                <div class="nav-instruction-sub" id="nav-instruction-sub">In 150 m &bull; Step-free pedestrian path</div>
+              </div>
+              <div class="nav-hud-actions">
+                <button type="button" class="btn btn-icon btn-nav-voice" id="nav-voice-btn" aria-label="Toggle voice guidance" title="Toggle voice guidance">
+                  <i data-lucide="volume-2" id="nav-voice-icon" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" id="nav-exit-btn" aria-label="Exit Navigation">
+                  Exit
+                </button>
+              </div>
+            </div>
+            
+            <div class="nav-hud-bottom">
+              <div class="nav-metric">
+                <span class="nav-metric-lbl">Remaining Distance</span>
+                <span class="nav-metric-val" id="nav-remaining-dist">2.7 km</span>
+              </div>
+              <div class="nav-metric">
+                <span class="nav-metric-lbl">Remaining ETA</span>
+                <span class="nav-metric-val" id="nav-remaining-time">33 min</span>
+              </div>
+              <div class="nav-step-controls">
+                <button type="button" class="btn btn-ghost btn-xs" id="nav-prev-step-btn" aria-label="Previous step">
+                  <i data-lucide="chevron-left" aria-hidden="true"></i> Prev
+                </button>
+                <span class="nav-step-counter" id="nav-step-counter">Step 1 of 12</span>
+                <button type="button" class="btn btn-ghost btn-xs" id="nav-next-step-btn" aria-label="Next step">
+                  Next <i data-lucide="chevron-right" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Off-route alert banner -->
+            <div id="nav-offroute-banner" class="nav-offroute-banner" hidden role="alert">
+              <i data-lucide="refresh-cw" class="spin-icon" aria-hidden="true"></i>
+              <span>Off-route detected &mdash; Recalculating path...</span>
+            </div>
+          </div>
+
+          <div class="map-header">
+            <div class="map-header-left">
+              <i data-lucide="map" aria-hidden="true"></i>
+              <span id="map-title-text">Interactive Route Map</span>
+            </div>
+            <div class="map-header-badges">
+              <span id="nav-status-badge" class="nav-status-badge" hidden><i data-lucide="navigation"></i> Navigating</span>
+              <span id="map-provider-badge" class="map-step-notice">Mapbox &bull; OpenStreetMap</span>
+            </div>
+          </div>
+          <!-- Leaflet Canvas Element -->
+          <div id="leaflet-map" class="leaflet-map-view"></div>
+          <div class="map-footer-bar">
+            <div id="map-legend-bar" class="map-legend-bar">
+              <span class="map-legend-item"><span class="legend-color legend-color-active"></span> Selected Route</span>
+              <span class="map-legend-item"><span class="legend-color legend-color-alt"></span> Alternative Route</span>
+              <span class="map-legend-item"><span class="legend-marker marker-start"></span> Start</span>
+              <span class="map-legend-item"><span class="legend-marker marker-end"></span> Destination</span>
+              <span class="map-legend-item"><span class="legend-marker marker-live-loc"></span> Live Position</span>
+            </div>
+            <p class="map-disclaimer-note">
+              <i data-lucide="info" aria-hidden="true"></i>
+              Interactive map. Select a route card or click a route on the map to inspect.
+            </p>
+          </div>
+        </div>
+
+        <!-- Selected route confirmation panel -->
+        <div id="selected-route-panel" class="selected-route-panel" hidden aria-live="polite"></div>
+
+        <!-- Indicator legend -->
+        <div id="ind-legend" class="ind-legend" hidden aria-label="Accessibility indicator legend">
+          <span><span class="ind ind-good" aria-hidden="true">&#10003;</span> Requirement satisfied</span>
+          <span><span class="ind ind-bad"  aria-hidden="true">&#10005;</span> Requirement not satisfied (conflict)</span>
+          <span><span class="ind ind-unknown" aria-hidden="true">?</span> Information unknown / unverified</span>
+        </div>
+
+        <p id="routes-trust-note" class="trust-note" role="note" hidden>
+          <i data-lucide="triangle-alert" aria-hidden="true"></i>
+          Accessibility data on urban paths may be incomplete.
+          <strong>?</strong> indicates information that could not be verified in OpenStreetMap &mdash; it is never assumed to be accessible.
+        </p>
+
+      </div>
+    </section>
+
+
+    <!-- ==========================================================
+         6. AI EXPLANATION
+         ========================================================== -->
+    <section id="ai-explanation" class="section ai-section" aria-labelledby="ai-heading">
+      <div class="container">
+        <div class="section-hd">
+          <h2 id="ai-heading">Why this route?</h2>
+        </div>
+        <div class="ai-card" aria-labelledby="ai-card-title">
+          <div class="ai-card-top">
+            <div class="ai-pill">
+              <i data-lucide="sparkles" aria-hidden="true"></i>
+              Evaluation explanation
+            </div>
+            <h3 id="ai-card-title">Why AccessAI recommends this route</h3>
+          </div>
+          <blockquote class="ai-quote" id="ai-quote-content">
+            &ldquo;AccessAI evaluates the real path geometry, distance, and accessibility features against your profile to recommend the safest, most compatible journey.&rdquo;
+          </blockquote>
+          <p class="ai-future-note">
+            <i data-lucide="info" aria-hidden="true"></i>
+            Detailed accessibility explanation generated based on evaluated route features and user preferences.
+          </p>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ==========================================================
+         7. ACCESSIBILITY SETTINGS
+         ========================================================== -->
+    <section id="accessibility-settings" class="section settings-section" aria-labelledby="settings-heading">
+      <div class="container settings-container">
+        <div class="section-hd section-hd-left">
+          <h2 id="settings-heading">Accessibility settings</h2>
+          <p class="section-sub">Adjust the interface to your preferences.</p>
+        </div>
+        <div class="settings-row" role="group" aria-label="Accessibility preferences">
+          <div class="setting-item">
+            <div class="setting-info">
+              <i data-lucide="type" aria-hidden="true"></i>
+              <div>
+                <span class="setting-name">Larger text</span>
+                <span class="setting-desc">Increase base font size</span>
+              </div>
+            </div>
+            <button class="toggle-btn" role="switch" aria-checked="false"
+              aria-label="Toggle larger text" data-setting="larger-text">
+              <span class="toggle-thumb" aria-hidden="true"></span>
+            </button>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <i data-lucide="contrast" aria-hidden="true"></i>
+              <div>
+                <span class="setting-name">High contrast</span>
+                <span class="setting-desc">Stronger colour contrast</span>
+              </div>
+            </div>
+            <button class="toggle-btn" role="switch" aria-checked="false"
+              aria-label="Toggle high contrast" data-setting="high-contrast">
+              <span class="toggle-thumb" aria-hidden="true"></span>
+            </button>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <i data-lucide="zap-off" aria-hidden="true"></i>
+              <div>
+                <span class="setting-name">Reduced motion</span>
+                <span class="setting-desc">Minimise animations</span>
+              </div>
+            </div>
+            <button class="toggle-btn" role="switch" aria-checked="false"
+              aria-label="Toggle reduced motion" data-setting="reduced-motion">
+              <span class="toggle-thumb" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <i data-lucide="accessibility" aria-hidden="true"></i>
+        <strong>AccessAI &mdash; Accessible City Assistant</strong>
+      </div>
+      <p class="footer-line">Built as a hackathon prototype with OpenStreetMap and Leaflet.</p>
+      <p class="footer-disc">
+        Live navigation prototype &bull; Urban accessibility data should always be independently verified.
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>
